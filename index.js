@@ -82,4 +82,40 @@ app.get("/tasks", (req, res) => {
 	})
 })
 
+// 1. Create a User schema.
+const userSchema = new mongoose.Schema({
+	username: String,
+	password: String,
+})
+// 2. Create a User model.
+const User = mongoose.model("User", userSchema);
+
+app.use(express.json());
+
+app.use(express.urlencoded({extended:true}));
+// 3. Create a POST route that will access the "/signup" route that will create a user.
+
+app.post("/signup", (req, res) => {
+	User.findOne({username: req.body.username, password: req.body.password}, (err, result) => {
+		if(result != null && result.username == req.body.username){
+			return res.send("Duplicate user found");
+		}
+		else{
+			let newUser = new User({
+				username: req.body.username,
+				password: req.body.password
+			})
+
+			newUser.save((saveErr, savedTask) => {
+				if(saveErr){
+					return console.error(saveErr);
+				}
+				else{
+					return res.status(201).send("New user created")
+				}
+			})
+		}
+	})
+})
+
 app.listen(port, () => console.log(`Server is running at port ${port}`));
